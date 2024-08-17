@@ -1,8 +1,8 @@
-import 'dart:ffi';
 
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:todo_app/model/notes.dart';
 import 'package:todo_app/model/task.dart';
 
 class DatabaseHelper{
@@ -11,16 +11,14 @@ class DatabaseHelper{
   static const _databaseVersion = 1;
 
 
-  static const todo_table = 'todo_table';
+  static const note_table = 'note_table';
   static const task_table = 'task_table';
 
-  //User
-  static const columnId = '_id';
-  static const columnName = 'name';
-  static const columnEmail = 'email';
-  static const columnPhoneNo = 'phoneNo';
-  static const columnAddress = 'address';
-  static const columnPassword = 'password';
+  //NOTES
+  static const noteColumnId = 'id';
+  static const noteColumnTitle = 'title';
+  static const noteColumnDescription = 'description';
+  static const noteColumnDateTime = 'dateTime';
 
   late Database _db;
 
@@ -36,15 +34,13 @@ class DatabaseHelper{
   }
 
   Future _onCreate(Database db, int version) async {
-    // await db.execute('''
-    //       CREATE TABLE $todo_table (ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    //         $columnName TEXT NOT NULL,
-    //         $columnEmail TEXT NOT NULL,
-    //         $columnPhoneNo TEXT NOT NULL,
-    //         $columnAddress TEXT NOT NULL,
-    //         $columnPassword TEXT NOT NULL
-    //       )
-    //       ''');
+    await db.execute('''
+          CREATE TABLE $note_table (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+            $noteColumnTitle TEXT NOT NULL,
+            $noteColumnDescription TEXT NOT NULL,
+            $noteColumnDateTime TEXT NOT NULL
+          )
+          ''');
 
     await db.execute('''
           CREATE TABLE $task_table (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -80,14 +76,6 @@ class DatabaseHelper{
     );
   }
 
-  // Future<int> markAsDoneTask(int task_id) async {
-  //   return await _db.update(
-  //     task_table,
-  //     where: 'isDone = ?',
-  //     whereArgs: [1],
-  //   );
-  // }
-
   Future<int> markAsDoneTask(Map<String, dynamic> row) async {
     int id = row["id"];
     return await _db.update(
@@ -99,13 +87,27 @@ class DatabaseHelper{
   }
 
 
-  Future<int> insertTask(Map<String, dynamic> row) async {
-    return await _db.insert(todo_table, row);
+  //NOTES
+  Future<int> createNote(Map<String, dynamic> row) async{
+    return await _db.insert(note_table, row);
   }
 
+  Future<List<Notes>> getNotesList() async {
+    final List<Map<String, dynamic>> maps = await _db.query(note_table);
 
-  Future<List<Map<String, dynamic>>> queryAllRows() async {
-    return await _db.query(todo_table);
+    // Convert the List<Map<String, dynamic> into a List<Task>.
+    return List.generate(maps.length, (i) {
+      return Notes.fromMap(maps[i]);
+    });
   }
+
+  Future<int> deleteNote(int note_id) async {
+    return await _db.delete(
+      note_table,
+      where: 'id = ?',
+      whereArgs: [note_id],
+    );
+  }
+
 
 }
