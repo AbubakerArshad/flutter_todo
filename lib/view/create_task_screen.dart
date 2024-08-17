@@ -1,5 +1,10 @@
-import 'package:flutter/cupertino.dart';
+
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:todo_app/model/task.dart';
+
+import '../provider/task_provider.dart';
 
 class CreateTaskScreen extends StatefulWidget{
   @override
@@ -17,6 +22,7 @@ class _CreateTaskScreen extends State<CreateTaskScreen>  with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
+    final task_provider = Provider.of<TaskProvider>(context);
     return Dialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12.0),
@@ -27,15 +33,15 @@ class _CreateTaskScreen extends State<CreateTaskScreen>  with SingleTickerProvid
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Enter Price',
+              'Enter Title',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 16),
             TextField(
               controller: _priceController,
-              keyboardType: TextInputType.number,
+              keyboardType: TextInputType.text,
               decoration: InputDecoration(
-                labelText: 'Task Title',
+                labelText: 'Title',
                 errorText: _errorText,
                 border: OutlineInputBorder(),
               ),
@@ -52,7 +58,12 @@ class _CreateTaskScreen extends State<CreateTaskScreen>  with SingleTickerProvid
                 ),
                 SizedBox(width: 8),
                 ElevatedButton(
-                  onPressed: _validateAndSubmit,
+                  onPressed: ()=> {
+                    if (_validateAndSubmit()){
+                      task_provider.addTask(Task(title: _priceController.text, isDone: 0, dateTime: DateFormat('dd-MMM-yyyy, hh:mm:a').format(DateTime.now()))),
+                      Navigator.pop(context)
+                    }
+                  },
                   child: Text('OK'),
                 ),
               ],
@@ -65,17 +76,16 @@ class _CreateTaskScreen extends State<CreateTaskScreen>  with SingleTickerProvid
 
   String? _errorText;
 
-  void _validateAndSubmit() {
+  bool _validateAndSubmit() {
     String text = _priceController.text;
 
     if (text.isEmpty) {
       setState(() {
         _errorText = 'Enter Title';
       });
+      return false;
     } else {
-      var price = int.parse(text);
-      // _updatePackagePrice(price , initPkPackageId ?? -1);
-      // Navigator.pop(context, text); // Return the valid price
+      return true;
     }
   }
 

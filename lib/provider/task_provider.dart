@@ -14,8 +14,14 @@ class TaskProvider with ChangeNotifier {
     _tasks = await dbHelper.getTaskList();
     notifyListeners();
   }
+
   void addTask(Task task) {
-    _tasks.add(task);
+    Map<String, dynamic> row = {
+      "title": task.title,
+      "isDone": task.isDone,
+      "dateTime": task.dateTime
+    };
+    dbHelper.createTask(row);
     notifyListeners();
   }
 

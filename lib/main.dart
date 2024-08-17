@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:todo_app/model/task.dart';
 import 'package:todo_app/provider/simple_provider.dart';
 import 'package:todo_app/provider/task_provider.dart';
+import 'package:todo_app/view/create_task_screen.dart';
 
 import 'db/database_helper.dart';
 
@@ -61,8 +62,8 @@ class _MyHomePageState extends State<MyHomePage> {
       print(formattedDate);
 
       var task = Task(title: "Testing", isDone: 0, dateTime: formattedDate);
-      add(task);
-      _query();
+      // add(task);
+      // _query();
       // This call to setState tells the Flutter framework that something has
       // changed in this State, which causes it to rerun the build method below
       // so that the display can reflect the updated values. If we changed
@@ -134,21 +135,23 @@ class _MyHomePageState extends State<MyHomePage> {
                 return Stack(
                   children: [
                     InkWell(
-                      child: Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            children: [
-                              Text(task_provider.tasks[index].title! ,style: TextStyle(color: Colors.blue),),
-                              Text(task_provider.tasks[index].isDone == 1 ? "Done" : "Pending" ,style: TextStyle(color: Colors.blue),),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      // provider.name = "Text Changed By Provider  !!!";
-                                      task_provider.markAsDoneTask(task_provider.tasks[index]);
-                                    },
-                                    child: Text('Mark as Done'),
-                                  )
-                            ],
+                      child: Container(width: double.infinity,
+                        child: Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              children: [
+                                Text(task_provider.tasks[index].title! ,style: TextStyle(color: Colors.blue),),
+                                Text(task_provider.tasks[index].isDone == 1 ? "Done" : "Pending" ,style: TextStyle(color: Colors.red),),
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        // provider.name = "Text Changed By Provider  !!!";
+                                        task_provider.markAsDoneTask(task_provider.tasks[index]);
+                                      },
+                                      child: Text('Mark as Done'),
+                                    )
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -177,7 +180,25 @@ class _MyHomePageState extends State<MyHomePage> {
             color: Colors.black38,
           ),
         ]),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+        floatingActionButton: Container(
+          height: 50,
+          margin: const EdgeInsets.only(left: 10, right: 10),
+          child: ElevatedButton(
+            onPressed: () async {
+              final result = await showDialog(
+                context: context,
+                builder: (_) => CreateTaskScreen(),
+              );
+
+            },
+            child: const Center(
+              child: Text('Create Task'),
+            ),
+          ),
+        ),
       ),
+
     );
   }
 }
