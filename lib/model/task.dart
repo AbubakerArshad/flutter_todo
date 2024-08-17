@@ -21,4 +21,14 @@ class Task {
     data['dateTime'] = this.dateTime;
     return data;
   }
+
+  // Convert a Map into a Todo.
+  static Task fromMap(Map<String, dynamic> map) {
+    return Task(
+      id: map['id'],
+      title: map['title'],
+      isDone: map['isDone'] is int ? map['isDone'] : int.tryParse(map['isDone'] ?? '0'),
+      dateTime: map['dateTime'],
+    );
+  }
 }

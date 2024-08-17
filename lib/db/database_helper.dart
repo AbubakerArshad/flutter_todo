@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
@@ -60,6 +62,42 @@ class DatabaseHelper{
   Future<List<Map<String, dynamic>>> getAllTask() async {
     return await _db.query(task_table);
   }
+
+  Future<List<Task>> getTaskList() async {
+    final List<Map<String, dynamic>> maps = await _db.query(task_table);
+
+    // Convert the List<Map<String, dynamic> into a List<Task>.
+    return List.generate(maps.length, (i) {
+      return Task.fromMap(maps[i]);
+    });
+  }
+
+  Future<int> deleteTask(int task_id) async {
+    return await _db.delete(
+      task_table,
+      where: 'id = ?',
+      whereArgs: [task_id],
+    );
+  }
+
+  // Future<int> markAsDoneTask(int task_id) async {
+  //   return await _db.update(
+  //     task_table,
+  //     where: 'isDone = ?',
+  //     whereArgs: [1],
+  //   );
+  // }
+
+  Future<int> markAsDoneTask(Map<String, dynamic> row) async {
+    int id = row["id"];
+    return await _db.update(
+      task_table,
+      row,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
 
   Future<int> insertTask(Map<String, dynamic> row) async {
     return await _db.insert(todo_table, row);

@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:todo_app/model/task.dart';
-import 'package:todo_app/view/create_task_screen.dart';
+import 'package:todo_app/provider/simple_provider.dart';
+import 'package:todo_app/provider/task_provider.dart';
 
 import 'db/database_helper.dart';
-
-
 
 final dbHelper = DatabaseHelper();
 
@@ -23,43 +22,26 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const MyHomePage(title: ''),
-    );
+    return MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => SimpleProvider()),
+          ChangeNotifierProvider(create: (_) => TaskProvider()),
+        ],
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'Flutter Demo',
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+            useMaterial3: true,
+          ),
+          home: const MyHomePage(title: ''),
+        ));
+
   }
 }
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
 
   final String title;
 
@@ -78,7 +60,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
       print(formattedDate);
 
-      var task = Task( title: "Testing", isDone: 0, dateTime: formattedDate);
+      var task = Task(title: "Testing", isDone: 0, dateTime: formattedDate);
       add(task);
       _query();
       // This call to setState tells the Flutter framework that something has
@@ -90,6 +72,21 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  @override
+  void initState() {
+    super.initState();
+
+    final now = DateTime.now();
+    final dateTimeFormatter = DateFormat('dd-MMM-yyyy, hh:mm:a');
+    final formattedDate = dateTimeFormatter.format(now);
+
+    print(formattedDate);
+
+    var task = Task(title: "Testing", isDone: 0, dateTime: formattedDate);
+    add(task);
+    _query();
+  }
+
   Future<void> add(Task task) async {
     Map<String, dynamic> row = {
       "title": task.title,
@@ -99,6 +96,7 @@ class _MyHomePageState extends State<MyHomePage> {
     final id = await dbHelper.createTask(row);
     debugPrint('inserted row id: $id');
   }
+
   void _query() async {
     final allRows = await dbHelper.getAllTask();
     print('query all rows:');
@@ -107,40 +105,79 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-
   final List<String> tabTitles = ['Tasks', 'Notes'];
-  final List<List<String>> tabData = [
-    ['Item 1', 'Item 2', 'Item 3'],
-    ['Item A', 'Item B', 'Item C'],
-    ['Item X', 'Item Y', 'Item Z'],
-  ];
+
+  bool isChecked = false;
+
 
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return DefaultTabController(
-        length: tabTitles.length,
-        child: Scaffold(
-            appBar: AppBar(
 
-            bottom: TabBar(
+    final provider = Provider.of<SimpleProvider>(context);
+    final task_provider = Provider.of<TaskProvider>(context);
+
+    task_provider.loadTasks();
+
+    return DefaultTabController(
+      length: tabTitles.length,
+      child: Scaffold(
+        appBar: AppBar(
+          bottom: TabBar(
             tabs: tabTitles.map((title) => Tab(text: title)).toList(),
-    ),
-    ),
-    body: TabBarView(
-    children: [
-      Container(color: Colors.black54,),
-      Container(color: Colors.black38,)
-    ]
-    ),
-    ),
+          ),
+        ),
+        body: TabBarView(children: [
+          Container(
+            child: ListView.builder(itemCount: task_provider.tasks.length,
+              itemBuilder: (BuildContext context, int index) {
+                return Stack(
+                  children: [
+                    InkWell(
+                      child: Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            children: [
+                              Text(task_provider.tasks[index].title! ,style: TextStyle(color: Colors.blue),),
+                              Text(task_provider.tasks[index].isDone == 1 ? "Done" : "Pending" ,style: TextStyle(color: Colors.blue),),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      // provider.name = "Text Changed By Provider  !!!";
+                                      task_provider.markAsDoneTask(task_provider.tasks[index]);
+                                    },
+                                    child: Text('Mark as Done'),
+                                  )
+                            ],
+                          ),
+                        ),
+                      ),
+                      onTap: () =>{
+
+                      task_provider.deleteTask(task_provider.tasks[index].id!)
+                      },
+                    ),
+                  ],
+                );
+              },
+            )
+            // child: Column(
+            //   children: [
+            //     Text(provider.name),
+            //     ElevatedButton(
+            //       onPressed: () {
+            //         provider.name = "Text Changed By Provider  !!!";
+            //       },
+            //       child: Text('Create Package'),
+            //     )
+            //   ],
+            // ),
+          ),
+          Container(
+            color: Colors.black38,
+          ),
+        ]),
+      ),
     );
   }
-
 }
