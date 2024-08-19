@@ -39,7 +39,6 @@ class MyApp extends StatelessWidget {
           ),
           home: const MyHomePage(title: ''),
         ));
-
   }
 }
 
@@ -53,7 +52,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   Future<void> add(Task task) async {
     Map<String, dynamic> row = {
       "title": task.title,
@@ -64,16 +62,12 @@ class _MyHomePageState extends State<MyHomePage> {
     debugPrint('inserted row id: $id');
   }
 
-
   final List<String> tabTitles = ['Tasks', 'Notes'];
 
   bool isChecked = false;
 
-
-
   @override
   Widget build(BuildContext context) {
-
     final taskProvider = Provider.of<TaskProvider>(context);
     final notesProvider = Provider.of<NotesProvider>(context);
 
@@ -83,61 +77,77 @@ class _MyHomePageState extends State<MyHomePage> {
     return DefaultTabController(
       length: tabTitles.length,
       child: Scaffold(
-        appBar: AppBar(title: const Text('Todo App'),
+        appBar: AppBar(
+          title: const Text('Todo App' ,style: TextStyle(fontSize: 30 ,color: Colors.indigo, fontWeight: FontWeight.bold),),
           bottom: TabBar(
             tabs: tabTitles.map((title) => Tab(text: title)).toList(),
           ),
         ),
         body: TabBarView(children: [
           Scaffold(
-            body: Container(            color: Colors.black54,
-                child: ListView.builder(itemCount: taskProvider.tasks.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return Stack(
-                    children: [
-                      InkWell(
-                        child: Container(width: double.infinity,
-                          child: Card(
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(
-                                children: [
-                                  Text(taskProvider.tasks[index].title! ,style: const TextStyle(color: Colors.blue),),
-                                  Text(taskProvider.tasks[index].isDone == 1 ? "Done" : "Pending" ,style: const TextStyle(color: Colors.red),),
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          // provider.name = "Text Changed By Provider  !!!";
-                                          taskProvider.markAsDoneTask(taskProvider.tasks[index]);
-                                        },
-                                        child: const Text('Mark as Done'),
-                                      )
-                                ],
+            body: Container(
+                color: Colors.black54,
+                child: ListView.builder(
+                  itemCount: taskProvider.tasks.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return Stack(
+                      children: [
+                        InkWell(
+                          child: Container(
+                            width: double.infinity,
+                            child: Card(
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
+                                  children: [
+                                    // Text(taskProvider.tasks[index].title! ,style: const TextStyle(color: Colors.blue),),
+                                    // Text(taskProvider.tasks[index].isDone == 1 ? "Done" : "Pending" ,style: const TextStyle(color: Colors.red),),
+                                    //     ElevatedButton(
+                                    //       onPressed: () {
+                                    //         // provider.name = "Text Changed By Provider  !!!";
+                                    //         taskProvider.markAsDoneTask(taskProvider.tasks[index]);
+                                    //       },
+                                    //       child: const Text('Mark as Done'),
+                                    //     )
+                                    Row(
+                                      // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Checkbox(value: taskProvider.tasks[index].isDone ==1, onChanged: (bool? value){
+                                          if(value != null){
+                                            taskProvider.markAsDoneTask(taskProvider.tasks[index]);
+                                          }
+                                        }),
+                                        Text(taskProvider.tasks[index].title!,style: TextStyle(fontSize: 25),)
+                                      ],
+                                    )
+                                  ],
+                                ),
                               ),
                             ),
                           ),
+                          onTap: () => {
+                            taskProvider
+                                .deleteTask(taskProvider.tasks[index].id!)
+                          },
                         ),
-                        onTap: () =>{
-            
-                        taskProvider.deleteTask(taskProvider.tasks[index].id!)
-                        },
-                      ),
-                    ],
-                  );
-                },
-              )
-              // child: Column(
-              //   children: [
-              //     Text(provider.name),
-              //     ElevatedButton(
-              //       onPressed: () {
-              //         provider.name = "Text Changed By Provider  !!!";
-              //       },
-              //       child: Text('Create Package'),
-              //     )
-              //   ],
-              // ),
-            ),
-            floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+                      ],
+                    );
+                  },
+                )
+                // child: Column(
+                //   children: [
+                //     Text(provider.name),
+                //     ElevatedButton(
+                //       onPressed: () {
+                //         provider.name = "Text Changed By Provider  !!!";
+                //       },
+                //       child: Text('Create Package'),
+                //     )
+                //   ],
+                // ),
+                ),
+            floatingActionButtonLocation:
+                FloatingActionButtonLocation.centerFloat,
             floatingActionButton: Container(
               height: 50,
               margin: const EdgeInsets.only(left: 10, right: 10),
@@ -147,7 +157,6 @@ class _MyHomePageState extends State<MyHomePage> {
                     context: context,
                     builder: (_) => CreateTaskScreen(),
                   );
-
                 },
                 child: const Center(
                   child: Text('Create Task'),
@@ -157,44 +166,59 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           Scaffold(
             body: Container(
-              color: Colors.black38,
-              child:  GridView.count(crossAxisCount: 2,children:
-                List<Widget>.generate(notesProvider.notes.length, (index){
-                  return Stack(
-                    children: [
-                      InkWell(
-                        child: Container(width: double.infinity,
-                          child: Card(
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(
-                                children: [
-                                  Text(notesProvider.notes[index].title??"" ,style: const TextStyle(color: Colors.blue),),
-                                  Text(notesProvider.notes[index].description??"" ,style: const TextStyle(color: Colors.red),),
-                                  Text(notesProvider.notes[index].dateTime??"" ,style: const TextStyle(color: Colors.indigo),),
-                                   ElevatedButton(
-                                            onPressed: () {
-                                              // provider.name = "Text Changed By Provider  !!!";
-                                              notesProvider.deleteNote(notesProvider.notes[index].id!);
-                                            },
-                                            child: const Text('Delete'),
-                                          ),
-                                ],
+                color: Colors.black38,
+                child: GridView.count(
+                  crossAxisCount: 2,
+                  children: List<Widget>.generate(notesProvider.notes.length,
+                      (index) {
+                    return Stack(
+                      children: [
+                        InkWell(
+                          child: Container(
+                            width: double.infinity,
+                            child: Card(
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(mainAxisAlignment: MainAxisAlignment.spaceAround, crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      notesProvider.notes[index].title ?? "",
+                                      style:
+                                          const TextStyle(color: Colors.blue),
+                                    ),
+                                    Text(
+                                      notesProvider.notes[index].description ??
+                                          "",
+                                      style: const TextStyle(color: Colors.red),
+                                    ),
+                                    Text(
+                                      notesProvider.notes[index].dateTime ?? "",
+                                      style:
+                                          const TextStyle(color: Colors.indigo),
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        // provider.name = "Text Changed By Provider  !!!";
+                                        notesProvider.deleteNote(
+                                            notesProvider.notes[index].id!);
+                                      },
+                                      child: const Text('Delete'),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
+                          onTap: () => {
+                            // notesProvider.deleteTask(notesProvider.notes[index].id!)
+                          },
                         ),
-                        onTap: () =>{
-
-                          // notesProvider.deleteTask(notesProvider.notes[index].id!)
-                        },
-                      ),
-                    ],
-                  );
-                })
-              ,)
-            ),
-            floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+                      ],
+                    );
+                  }),
+                )),
+            floatingActionButtonLocation:
+                FloatingActionButtonLocation.centerFloat,
             floatingActionButton: Container(
               height: 50,
               margin: const EdgeInsets.only(left: 10, right: 10),
@@ -204,7 +228,6 @@ class _MyHomePageState extends State<MyHomePage> {
                     context: context,
                     builder: (_) => CreateNoteScreen(),
                   );
-
                 },
                 child: const Center(
                   child: Text('Create Note'),
@@ -213,9 +236,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ),
         ]),
-
       ),
-
     );
   }
 }

@@ -34,7 +34,7 @@ class TaskProvider with ChangeNotifier {
     Map<String, dynamic> row = {
       "id": task.id,
       "title": task.title,
-      "isDone": 1,
+      "isDone": task.isDone == 1 ? 0 :1,
       "dateTime": task.dateTime
     };
     dbHelper.markAsDoneTask(row);
